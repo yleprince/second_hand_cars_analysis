@@ -4,8 +4,17 @@ import pandas as pd
 import plotly.express as px
 
 st.set_page_config(page_title="Car Explorer", layout="wide")
-st.title("🚗 Karoq vs Tiguan 🚘")
-st.text("This is a comparison between the Karoq (Skoda) and the Tiguan (Volkswagen) cars.")
+st.title("🚗 Karoq vs Tiguan vs Octavia vs T-Roc vs RAV🚘")
+st.text("This is a tool to explore some Skoda, Volkswagen and Toyota cars.")
+
+
+# Color selector
+st.sidebar.header("Chart")
+color_by = st.sidebar.selectbox(
+    "Color by",
+    options=["brand", "model", "year", "gas", "label", "gearbox", "engineVolume", "enginePower", "engineType"],
+    index=0,
+)
 
 # ---- Data loading ----
 @st.cache_data
@@ -73,15 +82,6 @@ if selected_label:
 if selected_engine_type:
     filtered = filtered[filtered["engineType"].isin(selected_engine_type)]
 
-
-# Color selector
-st.sidebar.header("Chart")
-color_by = st.sidebar.selectbox(
-    "Color by",
-    options=["brand", "model", "year", "gas", "label", "gearbox", "engineVolume", "enginePower", "engineType"],
-    index=0,
-)
-
 # Optional numeric ranges
 with st.sidebar.expander("Optional ranges", expanded=False):
     if not filtered.empty:
@@ -89,19 +89,16 @@ with st.sidebar.expander("Optional ranges", expanded=False):
         price_min, price_max = float(filtered["price"].min()), float(filtered["price"].max())
         year_min, year_max = int(filtered["year"].min()), int(filtered["year"].max())
         enginePower_min, enginePower_max = int(filtered["enginePower"].min()), int(filtered["enginePower"].max())
-        engineVolume_min, engineVolume_max = int(filtered["engineVolume"].min()), int(filtered["engineVolume"].max())
     else:
         km_min = km_max = 0.0
         price_min = price_max = 0.0
         year_min = year_max = 0
         enginePower_min = enginePower_max = 0
-        engineVolume_min = engineVolume_max = 0
 
     km_range = st.slider("km", km_min, km_max, (km_min, km_max))
     price_range = st.slider("price", price_min, price_max, (price_min, price_max))
     year_range = st.slider("year", year_min, year_max, (year_min, year_max))
     enginePower_range = st.slider("engine power", enginePower_min, enginePower_max, (enginePower_min, enginePower_max))
-    engineVolume_range = st.slider("engine volume", engineVolume_min, engineVolume_max, (engineVolume_min, engineVolume_max))
     
 
 if not filtered.empty:
@@ -110,14 +107,13 @@ if not filtered.empty:
         & (filtered["price"].between(price_range[0], price_range[1]))
         & (filtered["year"].between(year_range[0], year_range[1]))
         & (filtered["enginePower"].between(enginePower_range[0], enginePower_range[1]))
-        & (filtered["engineVolume"].between(engineVolume_range[0], engineVolume_range[1]))
     ]
 
 # ---- Main view ----
 left, right = st.columns([2, 1], gap="large")
 
 with left:
-    st.subheader("Scatter: price = f(km)")
+    st.subheader("Price = f(km)")
 
     if filtered.empty:
         st.warning("No rows match your filters.")
@@ -142,16 +138,16 @@ with left:
             hover_data=hover_cols_sorted,
             opacity=0.8,
         )
+
         fig.update_layout(
             height=650,
             xaxis_title="km",
             yaxis_title="price €",
             legend_title=color_by,
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
-with right:
-    st.subheader("Data preview")
-    st.caption(f"{len(filtered):,} rows shown (out of {len(plot_df):,})")
-    st.dataframe(filtered.drop("idx", axis=1).drop("title", axis=1), use_container_width=True, height=650)
+st.subheader("Data preview")
+st.caption(f"{len(filtered):,} rows shown (out of {len(plot_df):,})")
+st.dataframe(filtered.drop("idx", axis=1).drop("title", axis=1), width='stretch', height=650)
 
