@@ -1,7 +1,9 @@
-# app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import requests
+
+url = "https://n8n.yrieix.com/webhook/0ef9d95d-4576-445d-9d6c-3fc371fc9cfc?from=streamlit-cars"
 
 st.set_page_config(page_title="Car Explorer", layout="wide")
 st.title("🚗 Karoq vs Tiguan vs Octavia vs T-Roc vs RAV🚘")
@@ -50,7 +52,7 @@ def multiselect_filter(col: str, preferred_defaults=None):
     preferred_defaults = preferred_defaults or []
     options = sorted(plot_df[col].dropna().unique().tolist())
     defaults = [v for v in preferred_defaults if v in options] or options
-    selected = st.sidebar.multiselect(col, options=options, default=defaults)
+    selected = st.sidebar.multiselect(col, options=options, default=defaults, key=col)
     return selected
 
 selected_brand = multiselect_filter("brand")
@@ -95,10 +97,10 @@ with st.sidebar.expander("Optional ranges", expanded=False):
         year_min = year_max = 0
         enginePower_min = enginePower_max = 0
 
-    km_range = st.slider("km", km_min, km_max, (km_min, km_max))
-    price_range = st.slider("price", price_min, price_max, (price_min, price_max))
-    year_range = st.slider("year", year_min, year_max, (year_min, year_max))
-    enginePower_range = st.slider("engine power", enginePower_min, enginePower_max, (enginePower_min, enginePower_max))
+    km_range = st.slider("km", km_min, km_max, (km_min, km_max), key="km_range")
+    price_range = st.slider("price", price_min, price_max, (price_min, price_max), key="price_range")
+    year_range = st.slider("year", year_min, year_max, (year_min, year_max), key="year_range")
+    enginePower_range = st.slider("engine power", enginePower_min, enginePower_max, (enginePower_min, enginePower_max), key="engine_power_range")
     
 
 if not filtered.empty:
@@ -151,3 +153,4 @@ st.subheader("Data preview")
 st.caption(f"{len(filtered):,} rows shown (out of {len(plot_df):,})")
 st.dataframe(filtered.drop("idx", axis=1).drop("title", axis=1), width='stretch', height=650)
 
+requests.get(f"{url}&type=view", data=st.session_state)
