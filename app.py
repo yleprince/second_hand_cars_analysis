@@ -3,11 +3,56 @@ import pandas as pd
 import plotly.express as px
 import requests
 
-url = "https://n8n.yrieix.com/webhook/0ef9d95d-4576-445d-9d6c-3fc371fc9cfc?from=streamlit-cars"
 
-st.set_page_config(page_title="Car Explorer", layout="wide")
-st.title("🚗 Karoq vs Tiguan vs Octavia vs T-Roc vs RAV🚘")
-st.text("This is a tool to explore some Skoda, Volkswagen and Toyota cars.")
+url = "https://n8n.yrieix.com/webhook/0ef9d95d-4576-445d-9d6c-3fc371fc9cfc?from=streamlit-cars-selfhosted"
+
+st.set_page_config(page_title="Car Explorer", layout="wide", page_icon="🚘")
+
+_, right = st.columns([8, 1])
+if right.button("Like", icon="🩷", width="stretch"):
+    requests.get(f"{url}&type=like&section=manual")
+    st.balloons()
+
+st.title("🚗 Skoda vs Volkswagen vs Toyota 🚘")
+st.text("This is a tool to explore some cars models: Karoq vs Tiguan vs Octavia vs T-Roc vs RAV.")
+
+
+
+_, exp_col, _ = st.columns([1,3,1])
+with exp_col:
+    with st.expander("**📖 How to Use This Page**"):
+        requests.get(f"{url}&type=expand&section=manual")
+        st.markdown("""
+                    However you like! 🤷🏻
+
+                    But here's my recommendation:
+
+                    On the scatter graph below you can explore the data through clicking on the legend to select a category (double click to unselect),
+                    you can also zoom and hover the data to show more information!
+
+                    👈 On the left hand side you have also a tab where you can play with advanced features. Just try them all and see what knowledge
+                    you can learn from raw data exploration!
+                    """)
+        
+        st.info("""
+                This page's content has been extracted from lacentrale.fr around January, 20th. This was a specific project to help a friend, and I had no intent to update frequently the data.
+                """)
+    with st.expander("**🧠 What does the data tell?**"):
+        requests.get(f"{url}&type=expand&section=explanation")
+        st.markdown("""
+            Here are three points to get started with this page:
+            1. There is a **big trend**: the more the car goes on the road, the lower its value.
+            """)
+        st.image("./docs/price_f_kilometers.png", caption="The more a car goes on the road, the lower its value.")
+        st.markdown("""
+            2. Then we can picture ourself two areas of the scatter plot: **the new cars and the old ones**.
+            """)
+        st.image("./docs/big-trends.png", caption="New cars and the old ones.")
+        st.markdown("""
+            3. Once done we can deduct the place where the second hand offer has the most value: **the bottom left** part of the plot.
+            """)
+        st.image("./docs/high-vs-low-value.png", caption="High value opportunities vs low values")
+
 
 
 # Color selector
@@ -153,4 +198,4 @@ st.subheader("Data preview")
 st.caption(f"{len(filtered):,} rows shown (out of {len(plot_df):,})")
 st.dataframe(filtered.drop("idx", axis=1).drop("title", axis=1), width='stretch', height=650)
 
-requests.get(f"{url}&type=view", data=st.session_state)
+requests.get(f"{url}&type=view&section=home", data=st.session_state)
