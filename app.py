@@ -1,8 +1,7 @@
-import streamlit as st
 import pandas as pd
 import plotly.express as px
 import requests
-
+import streamlit as st
 
 url = "https://n8n.yrieix.com/webhook/0ef9d95d-4576-445d-9d6c-3fc371fc9cfc?from=streamlit-cars-selfhosted"
 
@@ -14,11 +13,12 @@ if right.button("Like", icon="🩷", width="stretch"):
     st.balloons()
 
 st.title("🚗 Skoda vs Volkswagen vs Toyota 🚘")
-st.text("This is a tool to explore some cars models: Karoq vs Tiguan vs Octavia vs T-Roc vs RAV.")
+st.text(
+    "This is a tool to explore some cars models: Karoq vs Tiguan vs Octavia vs T-Roc vs RAV."
+)
 
 
-
-_, exp_col, _ = st.columns([1,3,1])
+_, exp_col, _ = st.columns([1, 3, 1])
 with exp_col:
     with st.expander("**📖 How to Use This Page**"):
         requests.get(f"{url}&type=expand&section=manual")
@@ -27,15 +27,19 @@ with exp_col:
 
                     But here's my recommendation:
 
-                    On the scatter graph below you can explore the data through clicking on the legend to select a category (double click to unselect),
+                    On the scatter graph below you can explore the data through clicking on
+                    the legend to select a category (double click to unselect),
                     you can also zoom and hover the data to show more information!
 
-                    👈 On the left hand side you have also a tab where you can play with advanced features. Just try them all and see what knowledge
+                    👈 On the left hand side you have also a tab where you can play with
+                    advanced features. Just try them all and see what knowledge
                     you can learn from raw data exploration!
                     """)
-        
+
         st.info("""
-                This page's content has been extracted from lacentrale.fr around January, 20th. This was a specific project to help a friend, and I had no intent to update frequently the data.
+                This page's content has been extracted from lacentrale.fr around January, 20th.
+                This was a specific project to help a friend, and I had no intent to
+                frequently update the data.
                 """)
     with st.expander("**🧠 What does the data tell?**"):
         requests.get(f"{url}&type=expand&section=explanation")
@@ -43,25 +47,43 @@ with exp_col:
             Here are three points to get started with this page:
             1. There is a **big trend**: the more the car goes on the road, the lower its value.
             """)
-        st.image("./docs/price_f_kilometers.png", caption="The more a car goes on the road, the lower its value.")
+        st.image(
+            "./docs/price_f_kilometers.png",
+            caption="The more a car goes on the road, the lower its value.",
+        )
         st.markdown("""
-            2. Then we can picture ourself two areas of the scatter plot: **the new cars and the old ones**.
+            2. Then we can picture ourself two areas of the scatter plot:
+            **the new cars and the old ones**.
             """)
         st.image("./docs/big-trends.png", caption="New cars and the old ones.")
         st.markdown("""
-            3. Once done we can deduct the place where the second hand offer has the most value: **the bottom left** part of the plot.
+            3. Once done we can deduct the place where the second hand offer has
+            the most value: **the bottom left** part of the plot.
             """)
-        st.image("./docs/high-vs-low-value.png", caption="High value opportunities vs low values")
-
+        st.image(
+            "./docs/high-vs-low-value.png",
+            caption="High value opportunities vs low values",
+        )
 
 
 # Color selector
 st.sidebar.header("Chart")
 color_by = st.sidebar.selectbox(
     "Color by",
-    options=["brand", "model", "year", "gas", "label", "gearbox", "engineVolume", "enginePower", "engineType"],
+    options=[
+        "brand",
+        "model",
+        "year",
+        "gas",
+        "label",
+        "gearbox",
+        "engineVolume",
+        "enginePower",
+        "engineType",
+    ],
     index=0,
 )
+
 
 # ---- Data loading ----
 @st.cache_data
@@ -72,7 +94,20 @@ def load_csv(uploaded_file) -> pd.DataFrame:
 df = load_csv("data/processed/data.csv")
 
 # ---- Validate required columns ----
-required_cols = {"brand", "engineType", "engineVolume", "enginePower", "line", "model", "price", "km", "year", "gearbox", "gas", "label"}
+required_cols = {
+    "brand",
+    "engineType",
+    "engineVolume",
+    "enginePower",
+    "line",
+    "model",
+    "price",
+    "km",
+    "year",
+    "gearbox",
+    "gas",
+    "label",
+}
 missing = required_cols - set(df.columns)
 if missing:
     st.error(f"Missing required columns: {sorted(missing)}")
@@ -82,7 +117,9 @@ if missing:
 df["price"] = pd.to_numeric(df["price"], errors="coerce")
 df["km"] = pd.to_numeric(df["km"], errors="coerce")
 df["year"] = pd.to_numeric(df["year"], errors="coerce").astype("Int64")
-df["engineVolume"] = pd.to_numeric(df["engineVolume"], errors="coerce").astype("Float64")
+df["engineVolume"] = pd.to_numeric(df["engineVolume"], errors="coerce").astype(
+    "Float64"
+)
 df["enginePower"] = pd.to_numeric(df["enginePower"], errors="coerce").astype("Int64")
 
 for c in ["brand", "line", "model", "gearbox", "gas", "label"]:
@@ -93,6 +130,7 @@ plot_df = df.dropna(subset=["price", "km", "year", "gearbox", "gas", "label"]).c
 # ---- Sidebar filters ----
 st.sidebar.header("Filters")
 
+
 def multiselect_filter(col: str, preferred_defaults=None):
     preferred_defaults = preferred_defaults or []
     options = sorted(plot_df[col].dropna().unique().tolist())
@@ -100,9 +138,12 @@ def multiselect_filter(col: str, preferred_defaults=None):
     selected = st.sidebar.multiselect(col, options=options, default=defaults, key=col)
     return selected
 
+
 selected_brand = multiselect_filter("brand")
 selected_model = multiselect_filter("model")
-selected_gearboxes = multiselect_filter("gearbox", preferred_defaults=["Manuelle", "Auto"])
+selected_gearboxes = multiselect_filter(
+    "gearbox", preferred_defaults=["Manuelle", "Auto"]
+)
 selected_gas = multiselect_filter("gas")
 selected_label = multiselect_filter("label")
 selected_engine_type = multiselect_filter("engineType")
@@ -133,9 +174,13 @@ if selected_engine_type:
 with st.sidebar.expander("Optional ranges", expanded=False):
     if not filtered.empty:
         km_min, km_max = float(filtered["km"].min()), float(filtered["km"].max())
-        price_min, price_max = float(filtered["price"].min()), float(filtered["price"].max())
+        price_min, price_max = float(filtered["price"].min()), float(
+            filtered["price"].max()
+        )
         year_min, year_max = int(filtered["year"].min()), int(filtered["year"].max())
-        enginePower_min, enginePower_max = int(filtered["enginePower"].min()), int(filtered["enginePower"].max())
+        enginePower_min, enginePower_max = int(filtered["enginePower"].min()), int(
+            filtered["enginePower"].max()
+        )
     else:
         km_min = km_max = 0.0
         price_min = price_max = 0.0
@@ -143,10 +188,20 @@ with st.sidebar.expander("Optional ranges", expanded=False):
         enginePower_min = enginePower_max = 0
 
     km_range = st.slider("km", km_min, km_max, (km_min, km_max), key="km_range")
-    price_range = st.slider("price", price_min, price_max, (price_min, price_max), key="price_range")
-    year_range = st.slider("year", year_min, year_max, (year_min, year_max), key="year_range")
-    enginePower_range = st.slider("engine power", enginePower_min, enginePower_max, (enginePower_min, enginePower_max), key="engine_power_range")
-    
+    price_range = st.slider(
+        "price", price_min, price_max, (price_min, price_max), key="price_range"
+    )
+    year_range = st.slider(
+        "year", year_min, year_max, (year_min, year_max), key="year_range"
+    )
+    enginePower_range = st.slider(
+        "engine power",
+        enginePower_min,
+        enginePower_max,
+        (enginePower_min, enginePower_max),
+        key="engine_power_range",
+    )
+
 
 if not filtered.empty:
     filtered = filtered[
@@ -170,7 +225,16 @@ with left:
         hover_cols = [c for c in filtered.columns if c not in base_exclude]
 
         # Better ordering: put the most relevant fields first if they exist
-        preferred_hover_order = ["brand", "model", "year", "gearbox", "gas", "label", "price", "km"]
+        preferred_hover_order = [
+            "brand",
+            "model",
+            "year",
+            "gearbox",
+            "gas",
+            "label",
+            "price",
+            "km",
+        ]
         hover_cols_sorted = []
         for c in preferred_hover_order:
             if c in hover_cols:
@@ -192,10 +256,12 @@ with left:
             yaxis_title="price €",
             legend_title=color_by,
         )
-        st.plotly_chart(fig, width='stretch')
+        st.plotly_chart(fig, width="stretch")
 
 st.subheader("Data preview")
 st.caption(f"{len(filtered):,} rows shown (out of {len(plot_df):,})")
-st.dataframe(filtered.drop("idx", axis=1).drop("title", axis=1), width='stretch', height=650)
+st.dataframe(
+    filtered.drop("idx", axis=1).drop("title", axis=1), width="stretch", height=650
+)
 
 requests.get(f"{url}&type=view&section=home", data=st.session_state)
