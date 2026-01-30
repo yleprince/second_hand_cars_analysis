@@ -7,10 +7,23 @@ url = "https://n8n.yrieix.com/webhook/0ef9d95d-4576-445d-9d6c-3fc371fc9cfc?from=
 
 st.set_page_config(page_title="Car Explorer", layout="wide", page_icon="🚘")
 
-_, right = st.columns([8, 1])
-if right.button("Like", icon="🩷", width="stretch"):
+_, right, right_right = st.columns([8, 2, 2])
+if right.button("Balloons", icon="🎈"):
     requests.get(f"{url}&type=like&section=manual")
     st.balloons()
+
+with right_right.popover("Contact", icon="📬"):
+    st.markdown("""
+    ### Hello!
+    I'm [**Yrieix Leprince**](https://www.linkedin.com/in/yrieixleprince/), creator of this page 😃
+
+    You can contact me right here!
+
+    ---
+    """)
+    name = st.text_input("Name", placeholder="John Doe")
+    contact = st.text_input("Contact ✉️/📞/📯", placeholder="john.doe@gmail.com")
+    content = st.text_area("Object") 
 
 st.title("🚗 Skoda vs Volkswagen vs Toyota 🚘")
 st.text(
