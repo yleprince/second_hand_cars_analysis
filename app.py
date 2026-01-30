@@ -24,6 +24,11 @@ with right_right.popover("Contact", icon="📬"):
     name = st.text_input("Name", placeholder="John Doe")
     contact = st.text_input("Contact ✉️/📞/📯", placeholder="john.doe@gmail.com")
     content = st.text_area("Object") 
+    if st.button("Send", icon="📩"):
+        contactPayload = {"from": "streamlit-cars-selfhosted", "name": name, "contact": contact, "content": content}
+        response = requests.get(f"https://n8n.yrieix.com/webhook/4d9ac11b-8c8a-4108-ac78-a57279b363b9", data=contactPayload)
+        st.toast(response.json()['content'], icon="😍")
+        
 
 st.title("🚗 Skoda vs Volkswagen vs Toyota 🚘")
 st.text(
